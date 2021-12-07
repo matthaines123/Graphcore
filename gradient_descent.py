@@ -41,8 +41,8 @@ for epoch in range(100):
   grad_val = gradient(x_data, y_data)
   w -= 0.01 * grad_val
   print('Epoch:', epoch, 'w=', w, 'loss=', cost_val)
-  epoch_list.append(epoch)    # 保存epoch数据
-  cost_list.append(cost_val)  # 保存cost数据
+  epoch_list.append(epoch)    
+  cost_list.append(cost_val) 
 print('Predict (after training)', 4, forward(4))
 
 plt.plot(epoch_list,cost_list)
