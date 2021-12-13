@@ -1,11 +1,12 @@
 import numpy as np
+from sympy import Symbol, Derivative
 from collections import deque
 import matplotlib.pyplot as plt
  
 def testDelays(function, maxDelay=10):
     iterList = []
     for delay in range(1, maxDelay):
-        gradient, vectorList, noIters = gd(gradient=function, start=10, learning_rate=0.2, delay=delay, n_iter=10000)
+        gradient, vectorList, noIters = gd(function=function, start=10, learning_rate=0.2, delay=delay, n_iter=10000)
         print(noIters)
         iterList.append(noIters)
  
@@ -16,7 +17,7 @@ def testDelays(function, maxDelay=10):
     plt.grid()
     plt.show()
  
-def gd(gradient, start, learning_rate, n_iter=500, tol=1e-06, delay=2):
+def gd(function, start, learning_rate, n_iter=500, tol=1e-06, delay=2):
     '''
     Inputs:
     gradient: Function that takes a vector and returns a gradient of the function
@@ -30,11 +31,15 @@ def gd(gradient, start, learning_rate, n_iter=500, tol=1e-06, delay=2):
         q.append(start)
     newVector = start    
     nIters = n_iter
+
+    gradient = Derivative(function, x).doit()
+
     for i in range(n_iter):
        
         vector = q.popleft()
         #Calculates step size
-        diff = -learning_rate * gradient(vector)
+        
+        diff = -learning_rate * gradient.subs({x:vector})
        
         #Checks gradient against tolerance
         if np.all(np.abs(diff) <= tol):
@@ -47,11 +52,7 @@ def gd(gradient, start, learning_rate, n_iter=500, tol=1e-06, delay=2):
        
     return vector, allVectors, nIters
  
-function = (lambda v:2*v)
- 
+x = Symbol('x')
+function = x**2 + x*4 + 5
 testDelays(function=function)
- 
-'''gradient, vectorList, noIters = gd(gradient=function, start=10, learning_rate=0.2, delay=2)
-print(gradient)
-print(noIters)'''
-#print(vectorList)
+
