@@ -2,22 +2,38 @@ import numpy as np
 from sympy import Symbol, Derivative
 from collections import deque
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from mpl_toolkits import mplot3d
+from matplotlib.ticker import LinearLocator
+
+from tqdm import tqdm
+
  
-def testDelays(function, maxDelay=10):
+def testDelays(function, maxDelay=5, learningRateInterval=10, maxIter=500):
     iterList = []
-    for delay in range(1, maxDelay):
-        gradient, vectorList, noIters = gd(function=function, start=10, learning_rate=0.2, delay=delay, n_iter=10000)
-        print(noIters)
-        iterList.append(noIters)
- 
-    plt.plot(range(1, maxDelay), iterList)
-    plt.yscale('log')
-    plt.ylabel('Number of iterations')
-    plt.xlabel('Delay')
-    plt.grid()
+    
+
+    y = np.arange(1, maxDelay)
+    x = np.linspace(0.001, 0.5, num=learningRateInterval)
+    X, Y = np.meshgrid(x,y)
+
+    for rate in tqdm(x):
+        for delay in y:
+            noIters = gd(function=function, start=10, learning_rate=rate, delay=delay, n_iter=maxIter)
+            iterList.append(noIters)
+
+    Z = np.array(iterList).reshape(y.size, x.size)
+    
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.contour3D(X, Y, Z, 50, cmap='plasma')
+    ax.set_xlabel('x')
+    #ax.set_zscale('log')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
     plt.show()
  
-def gd(function, start, learning_rate, n_iter=500, tol=1e-06, delay=2):
+def gd(function, start, learning_rate, n_iter=500, tol=1e-06, delay=1) -> int:
     '''
     Inputs:
     gradient: Function that takes a vector and returns a gradient of the function
@@ -30,7 +46,7 @@ def gd(function, start, learning_rate, n_iter=500, tol=1e-06, delay=2):
     for _ in range(delay):
         q.append(start)
     newVector = start    
-    nIters = n_iter
+    nIters = 0
 
     gradient = Derivative(function, x).doit()
 
@@ -50,9 +66,14 @@ def gd(function, start, learning_rate, n_iter=500, tol=1e-06, delay=2):
         q.append(newVector)
         allVectors.append(newVector)
        
-    return vector, allVectors, nIters
+    return nIters
  
 x = Symbol('x')
 function = x**2 + x*4 + 5
-testDelays(function=function)
+
+maxDelay = 20 
+learningRateInterval=500
+maxIter = 200
+
+testDelays(function=function, maxDelay=maxDelay, learningRateInterval=learningRateInterval, maxIter=maxIter)
 
