@@ -159,7 +159,7 @@ class Optimiser():
         return grad
 
     def train(self, max_iter):
-        zList = np.zeros(max_iter)
+        zList = np.zeros(max_iter+1)
         for step in range(max_iter):
             
             currentVelocity = self.q.popleft()
@@ -211,7 +211,7 @@ y = Symbol('y')
 f = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2
 g = x**2 + y**2 + 4*x + 5*x
 
-opt = Optimiser(f, 1.0, 1.0, momentum=0.75, delay=1)
+opt = Optimiser(f, 1.0, 1.0, momentum=0.8, delay=2)
 opt.train(1000)
 
 Plot3D = Plot3D(50, f, margin=4.5)
