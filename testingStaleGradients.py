@@ -27,10 +27,10 @@ def testDelays(function, maxDelay=5, learningRateInterval=10, maxIter=500):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     ax.contour3D(X, Y, Z, 50, cmap='plasma')
-    ax.set_xlabel('x')
+    ax.set_xlabel('Learning Rate')
     #ax.set_zscale('log')
-    ax.set_ylabel('y')
-    ax.set_zlabel('z')
+    ax.set_ylabel('Delay')
+    ax.set_zlabel('Number of Iterations to Converge')
     plt.show()
  
 def gd(function, start, learning_rate, n_iter=500, tol=1e-06, delay=1) -> int:
@@ -65,14 +65,14 @@ def gd(function, start, learning_rate, n_iter=500, tol=1e-06, delay=1) -> int:
         newVector += diff
         q.append(newVector)
         allVectors.append(newVector)
-       
+
     return nIters
- 
+
 x = Symbol('x')
 function = x**2 + x*4 + 5
 
-maxDelay = 20 
-learningRateInterval=500
+maxDelay = 10
+learningRateInterval=100
 maxIter = 200
 
 testDelays(function=function, maxDelay=maxDelay, learningRateInterval=learningRateInterval, maxIter=maxIter)

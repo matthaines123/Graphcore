@@ -2,10 +2,17 @@ from sympy import Symbol, Derivative
 import numpy as np
 import time
 import os
+import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LogNorm
 from collections import deque
+from sympy import exp
+from sympy import sqrt
+from sympy import cos
+from numpy import e
+from numpy import pi
+
 
 class Plot3D():
     def __init__(self, noOfPoints, function, margin):
@@ -161,13 +168,13 @@ class Optimiser():
     def train(self, max_iter):
         zList = np.zeros(max_iter+1)
         for step in range(max_iter):
-            
+
             currentVelocity = self.q.popleft()
             self.z = self.func(self.vars)
             zList[step+1] = self.z
-            
+
             diff = np.abs(zList[step] - zList[step+1])
-            
+
             self.history_update(self.z, self.x, self.y)
 
             self.grad = self.grads(self.vars)
@@ -182,8 +189,6 @@ class Optimiser():
                 self.history_update(self.z, self.x, self.y)
                 break
             self.q.append(newVelo)
-                
-            pre_z = self.z
 
         self.x_history = np.array(self.x_history)
         self.y_history = np.array(self.y_history)
@@ -209,10 +214,15 @@ class Optimiser():
 x = Symbol('x')
 y = Symbol('y')
 f = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2
-g = x**2 + y**2 + 4*x + 5*x
+#g = x**2 + y**2 + 4*x + 5*x
+h = -20.0 * exp(-0.2 * sqrt(0.5 * (x**2 + y**2))) - exp(0.5 * (cos(2 * pi * x) + cos(2 * pi * y))) + e + 20
 
-opt = Optimiser(f, 1.0, 1.0, momentum=0.8, delay=2)
+#*math.sqrt(0.5*(x**2 + y**2)))
+#-math.exp(0.5*(math.cos(2*pi*x) + math.cos(2*pi*y))) + math.e + 20
+
+opt = Optimiser(h, 9.6, 9.5, momentum=0.99, delay=1)
 opt.train(1000)
 
-Plot3D = Plot3D(50, f, margin=4.5)
+Plot3D = Plot3D(50, h, margin=150)
+Plot3D.plotMinima()
 Plot3D.contourPlotWithPath(opt.path)
