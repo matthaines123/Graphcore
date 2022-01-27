@@ -7,11 +7,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LogNorm
 from collections import deque
-from sympy import exp
-from sympy import sqrt
-from sympy import cos
-from numpy import e
-from numpy import pi
+
+from sympy import sin, cos, exp, sqrt
+from numpy import pi, e
+
 
 
 class Plot3D():
@@ -213,16 +212,21 @@ class Optimiser():
 
 x = Symbol('x')
 y = Symbol('y')
-f = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2
-#g = x**2 + y**2 + 4*x + 5*x
+beale = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2   #1, 1.4
+g = x**2 + y**2 + 4*x + 5*x
 h = -20.0 * exp(-0.2 * sqrt(0.5 * (x**2 + y**2))) - exp(0.5 * (cos(2 * pi * x) + cos(2 * pi * y))) + e + 20
+goldsteinPrice = (1+(x+y+1)**2*(19-14*x+3*x**2-14*y+6*x*y+3*y**2))*(30+(2*x-3*y)**2*(18-32*x+12*x**2+48*y-36*x*y+27*y**2)) 
+booth = (x+2*y-7)**2 + (2*x + y - 5)*2
+sphere = x**2 + y**2
+rosenbrock = (x-1)**2 + 10*(y-x**2)**2 #-1.4, -1
+matyas = 0.26*(x**2+y**2)-0.48*x*y  #3, 3.5
+levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y))  #-3, 3
+himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2
 
-#*math.sqrt(0.5*(x**2 + y**2)))
-#-math.exp(0.5*(math.cos(2*pi*x) + math.cos(2*pi*y))) + math.e + 20
 
-opt = Optimiser(h, 9.6, 9.5, momentum=0.99, delay=1)
+opt = Optimiser(himmelblau, 1, -3, momentum=0.8, delay=2)
 opt.train(1000)
 
-Plot3D = Plot3D(50, h, margin=150)
+Plot3D = Plot3D(50, himmelblau, margin=4.5)
 Plot3D.plotMinima()
 Plot3D.contourPlotWithPath(opt.path)
