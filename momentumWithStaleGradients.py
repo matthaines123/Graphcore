@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LogNorm
 from collections import deque
-
 from sympy import sin, cos, exp, sqrt
 from numpy import pi, e
+from decimal import Decimal, DecimalException
 
 
 
@@ -108,9 +108,9 @@ class Plot3D():
 
         plt.show()
 
-    def plotContourWithMinima(self, path):
-        fig = plt.figure(figsize=plt.figaspect(0.5))
-        ax = fig.add_subplot(1,2,1,projection='3d')
+    def plotContourWithMinima(self, path, zList, maxIter):
+        fig = plt.figure(figsize=plt.figaspect(0.4))
+        ax = fig.add_subplot(1,3,1,projection='3d')
 
         ax.plot_surface(self.x_mesh.astype(float), self.y_mesh.astype(float), self.z.astype(float), norm=LogNorm(), rstride=1, cstride=1, 
                 edgecolor='none', alpha=.8, cmap=plt.cm.jet)
@@ -122,7 +122,7 @@ class Plot3D():
         ax.set_xlim((self.x_min, self.x_max))
         ax.set_ylim((self.y_min, self.y_max))
 
-        ax = fig.add_subplot(1,2,2)
+        ax = fig.add_subplot(1,3,2)
 
         ax.contour(self.x_mesh, self.y_mesh, self.z, levels=np.logspace(-.5, 5, 35), norm=LogNorm(), cmap=plt.cm.jet)
     
@@ -133,6 +133,12 @@ class Plot3D():
 
         ax.set_xlim((self.x_min, self.x_max))
         ax.set_ylim((self.y_min, self.y_max))
+
+        ax = fig.add_subplot(1,3,3)
+
+        x = np.linspace(0, maxIter, maxIter+1)
+        ax.set_yscale("log")
+        ax.plot(x, zList)
 
         plt.show()
 
@@ -156,9 +162,10 @@ class Optimiser():
         self.momentum = momentum
         self.velocity = np.zeros([2])
 
-        self.q = deque()
-        for _ in range(delay):
-            self.q.append([self.velocity])
+        if delay != None:
+            self.q = deque()
+            for _ in range(delay):
+                self.q.append([self.velocity])
 
         self.z_history = []
         self.x_history = []
@@ -172,7 +179,7 @@ class Optimiser():
     def update_weights(self, grads, velocity):
 
         velocity = np.multiply(self.momentum, velocity) + np.multiply(self.lr, grads)
-        self.vars = np.subtract(self.vars, velocity)[0]
+        self.vars = np.subtract(self.vars, velocity)
         return velocity
 
     def history_update(self, z, x, y):
@@ -186,17 +193,23 @@ class Optimiser():
         return z
 
     def grads(self, variables):
+        
         xi, yi = variables
         dx = self.gradients[0].subs([(x,xi), (y,yi)])
         dy = self.gradients[1].subs([(x,xi), (y,yi)])
         grad = [dx, dy]
         return grad
 
+    def getCurrentVelocity(self):
+        return self.q.popleft()
+
+    def saveVelocity(self, newVelocity):
+        self.q.append(newVelocity)
+
     def train(self, max_iter):
         zList = np.zeros(max_iter+1)
         for step in range(max_iter):
-
-            currentVelocity = self.q.popleft()
+            currentVelocity = self.getCurrentVelocity()
             self.z = self.func(self.vars)
             zList[step+1] = self.z
 
@@ -208,18 +221,22 @@ class Optimiser():
             newVelo = self.update_weights(self.grad, currentVelocity)
 
             if (step+1) % 100 == 0:
-                print("steps: {}  z: {:.6f}  x: {:.5f}  y: {:.5f}  dx: {:.5f}  dy: {:.5f}".format(step+1, self.func(self.vars), self.x, self.y, self.dx, self.dy))
+                try:
+                    print("steps: {}  z: {:.6f}  x: {:.5f}  y: {:.5f}  dx: {:.5f}  dy: {:.5f}".format(step+1, float(self.func(self.vars)), self.x, self.y, self.dx, self.dy))
+                except decimal.InvalidOperation:
+                    pass
             if np.abs(diff) < 1e-7 and step > 5:
                 print("Enough convergence")
                 print("steps: {}  z: {:.6f}  x: {:.5f}  y: {:.5f}".format(step+1, self.func(self.vars), self.x, self.y))
                 self.z = self.func(self.vars)
                 self.history_update(self.z, self.x, self.y)
                 break
-            self.q.append(newVelo)
+            self.saveVelocity(newVelo)
 
         self.x_history = np.array(self.x_history)
         self.y_history = np.array(self.y_history)
         self.path = np.concatenate((np.expand_dims(self.x_history, 1), np.expand_dims(self.y_history, 1)), axis=1).T
+        return zList, step
 
     @property
     def x(self):
@@ -238,6 +255,35 @@ class Optimiser():
         return self.grad[1]
 
 
+class OptimiserWithVaryingDelay(Optimiser):
+    def __init__(self, function, x_init=None, y_init=None, learning_rate=0.01, momentum=0.9, meanDelay=1):
+        super().__init__(function, x_init, y_init, learning_rate, momentum, delay=None)
+        self.meanDelay = meanDelay
+        self.velocities = []
+        self.velocities.append(self.velocity)
+
+    def getProbability(self, meanDelay):
+        mu = meanDelay
+        sigma = 1
+        dist = round(np.random.normal(mu, sigma))
+        if dist <= 1:
+            return 1
+        else:
+            return dist
+        
+    def getCurrentVelocity(self):
+        delay = self.getProbability(self.meanDelay)
+        if len(self.velocities) >= (delay + 1):
+            
+            return self.velocities[-delay]
+        else:
+            return self.velocities[0]
+
+    def saveVelocity(self, newVelocity):
+        self.velocities.append(newVelocity)
+        #np.append(self.velocities, newVelocity)
+    
+
 x = Symbol('x')
 y = Symbol('y')
 beale = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2   #1, 1.4
@@ -251,11 +297,11 @@ matyas = 0.26*(x**2+y**2)-0.48*x*y  #3, 3.5
 levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y))  #-3, 3
 himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2   #1, -3
 
+opt = OptimiserWithVaryingDelay(beale, -1, 1.4, momentum=0.8, meanDelay=5)
 
-opt = Optimiser(himmelblau, 1, -3, momentum=0.8, delay=2)
-opt.train(1000)
+zList, convergeIter = opt.train(1000)
 
-Plot3D = Plot3D(50, himmelblau, margin=4.5)
+Plot3D = Plot3D(50, beale, margin=4.5)
 #Plot3D.plotMinima()
 #Plot3D.contourPlotWithPath(opt.path)
-Plot3D.plotContourWithMinima(opt.path)
+Plot3D.plotContourWithMinima(opt.path, zList[:convergeIter+1], convergeIter)
