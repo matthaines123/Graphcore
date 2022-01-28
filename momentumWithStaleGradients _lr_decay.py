@@ -162,7 +162,7 @@ class Optimiser():
         grad = [dx, dy]
         return grad
 
-    def lr_decay(self , step ):
+    def lr_decay(self , step):
         lr = self.lr * 1 / (1 + 0.001 * step)
         return lr
 
@@ -262,17 +262,20 @@ levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y
 himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2
 
 #delay_1
-opt_1 = Optimiser(beale, 1, 1.4, learning_rate=0.01, momentum=0.8, delay=3)
+
+opt_1 = Optimiser(beale, 1, 1.4, learning_rate=0.01, momentum=0.8, delay=1)
 opt_1.train(1000)
 
+opt_2 = Optimiser(beale, 1, 1.4, learning_rate=0.01, momentum=0.8, delay=2)
+opt_2.train(1000)
+
 #delay_2
-opt_2 = Optimiser(beale, 1, 1.4, learning_rate=0.01 , momentum=0.8, delay=3)
-opt_2.train_lr_decay(1000)
+opt_3 = Optimiser(beale, 1, 1.4, learning_rate=0.01 , momentum=0.8, delay=3)
+opt_3.train_lr_decay(1000)
 
 
 Plot3D = Plot3D(50, beale, margin=4.5)
 Plot3D.plotMinima()
-plt.figure()
 Plot3D.contourPlotWithPath(opt_1.path)
 Plot3D.contourPlotWithPath(opt_2.path)
 plt.show()

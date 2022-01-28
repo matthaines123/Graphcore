@@ -108,6 +108,34 @@ class Plot3D():
 
         plt.show()
 
+    def plotContourWithMinima(self, path):
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        ax = fig.add_subplot(1,2,1,projection='3d')
+
+        ax.plot_surface(self.x_mesh.astype(float), self.y_mesh.astype(float), self.z.astype(float), norm=LogNorm(), rstride=1, cstride=1, 
+                edgecolor='none', alpha=.8, cmap=plt.cm.jet)
+        
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+
+        ax.set_xlim((self.x_min, self.x_max))
+        ax.set_ylim((self.y_min, self.y_max))
+
+        ax = fig.add_subplot(1,2,2)
+
+        ax.contour(self.x_mesh, self.y_mesh, self.z, levels=np.logspace(-.5, 5, 35), norm=LogNorm(), cmap=plt.cm.jet)
+    
+        ax.quiver(path[0,:-1].astype(float), path[1,:-1].astype(float), path[0,1:].astype(float)-path[0,:-1].astype(float), path[1,1:].astype(float)-path[1,:-1].astype(float), scale_units='xy', angles='xy', scale=1, color='k')
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+
+        ax.set_xlim((self.x_min, self.x_max))
+        ax.set_ylim((self.y_min, self.y_max))
+
+        plt.show()
+
 
 class Optimiser():
     def __init__(self, function, x_init=None, y_init=None, learning_rate=0.01, momentum=0.9, delay=1):
@@ -221,12 +249,13 @@ sphere = x**2 + y**2
 rosenbrock = (x-1)**2 + 10*(y-x**2)**2 #-1.4, -1
 matyas = 0.26*(x**2+y**2)-0.48*x*y  #3, 3.5
 levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y))  #-3, 3
-himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2
+himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2   #1, -3
 
 
 opt = Optimiser(himmelblau, 1, -3, momentum=0.8, delay=2)
 opt.train(1000)
 
 Plot3D = Plot3D(50, himmelblau, margin=4.5)
-Plot3D.plotMinima()
-Plot3D.contourPlotWithPath(opt.path)
+#Plot3D.plotMinima()
+#Plot3D.contourPlotWithPath(opt.path)
+Plot3D.plotContourWithMinima(opt.path)
