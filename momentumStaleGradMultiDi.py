@@ -172,7 +172,8 @@ class Optimiser():
 
     def train(self, max_iter):
         resultList = np.zeros(max_iter+1)
-        for step in range(max_iter):            
+        dList = np.zeros((max_iter,3))
+        for step in range(max_iter):
             currentVelocity = self.q.popleft()
             self.result = self.func()
             resultList[step+1] = self.result
@@ -183,6 +184,9 @@ class Optimiser():
             self.grad = self.grads()
             newVelo = self.update_weights(self.grad, currentVelocity)
 
+            dList[step] = self.grad
+
+
             self.result = self.func()
             if (step+1) % 100 == 0:
                 print('\nSteps: {}  Function Value: {:.6f}'.format(step+1, self.result))
@@ -192,10 +196,14 @@ class Optimiser():
             if np.abs(diff) < 1e-7 and step > 5:
                 print('\nEnough Convergence')
                 print('Steps: {}  Function Value: {:.6f}'.format(step+1, self.result))
+                np.savetxt('differentials.txt', dList)
                 self.print_var_values()
                 self.print_diff_values()
                 break
             self.q.append(newVelo)
+
+            if step == max_iter:
+                np.savetxt('differentials.txt', dList)
 
         self.var_values_history = np.array(self.var_values_history)
         # If there are exactly three dimensions
