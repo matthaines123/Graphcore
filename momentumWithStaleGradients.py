@@ -96,7 +96,7 @@ class Plot3D():
         plt.show()
 
     def contourPlot(self):
-        fig, ax = plt.subplots(figsize=(10, 8))
+        fig, ax = plt.subplots(figsize=(20, 16))
 
         ax.contour(self.x_mesh.astype(float), self.y_mesh.astype(float), self.z.astype(float), levels=np.logspace(-.5, 5, 35), norm=LogNorm(), cmap=plt.cm.jet)
 
@@ -108,9 +108,9 @@ class Plot3D():
 
         plt.show()
 
-    def plotContourWithMinima(self, path, zList, maxIter):
-        fig = plt.figure(figsize=plt.figaspect(0.4))
-        ax = fig.add_subplot(1,3,1,projection='3d')
+    def plotContourWithMinima(self, path, zList, maxIter, velocities):
+        fig = plt.figure(figsize=plt.figaspect(0.8))
+        ax = fig.add_subplot(2,2,1,projection='3d')
 
         ax.plot_surface(self.x_mesh.astype(float), self.y_mesh.astype(float), self.z.astype(float), norm=LogNorm(), rstride=1, cstride=1, 
                 edgecolor='none', alpha=.8, cmap=plt.cm.jet)
@@ -122,7 +122,7 @@ class Plot3D():
         ax.set_xlim((self.x_min, self.x_max))
         ax.set_ylim((self.y_min, self.y_max))
 
-        ax = fig.add_subplot(1,3,2)
+        ax = fig.add_subplot(2,2,2)
 
         ax.contour(self.x_mesh, self.y_mesh, self.z, levels=np.logspace(-.5, 5, 35), norm=LogNorm(), cmap=plt.cm.jet)
     
@@ -134,11 +134,22 @@ class Plot3D():
         ax.set_xlim((self.x_min, self.x_max))
         ax.set_ylim((self.y_min, self.y_max))
 
-        ax = fig.add_subplot(1,3,3)
+        ax = fig.add_subplot(2,2,3)
 
         x = np.linspace(0, maxIter, maxIter+1)
         ax.set_yscale("log")
         ax.plot(x, zList)
+        ax.set_xlabel('Number of Iterations')
+        ax.set_ylabel('z')
+
+        ax = fig.add_subplot(2,2,4)
+
+        
+        ax.plot(x, velocities[0], label="dx")
+        ax.plot(x, velocities[1], label="dy")
+        ax.set_xlabel("Number of Iterations")
+        ax.set_ylabel("Velocity in direction")
+        plt.legend()
 
         plt.show()
 
@@ -170,6 +181,8 @@ class Optimiser():
         self.z_history = []
         self.x_history = []
         self.y_history = []
+        self.dx_history = []
+        self.dy_history = []
 
     def gradient(self, function):
         gradx = Derivative(function, x).doit()
@@ -179,13 +192,15 @@ class Optimiser():
     def update_weights(self, grads, velocity):
 
         velocity = np.multiply(self.momentum, velocity) + np.multiply(self.lr, grads)
-        self.vars = np.subtract(self.vars, velocity)
+        self.vars = np.subtract(self.vars, velocity)[0]
         return velocity
 
-    def history_update(self, z, x, y):
+    def history_update(self, z, x, y, dx, dy):
         self.z_history.append(z)
         self.x_history.append(x)
         self.y_history.append(y)
+        self.dx_history.append(dx)
+        self.dy_history.append(dy)
 
     def func(self, variables):
         xi, yi = variables
@@ -206,6 +221,14 @@ class Optimiser():
     def saveVelocity(self, newVelocity):
         self.q.append(newVelocity)
 
+    def createPath(self):
+        self.x_history = np.array(self.x_history)
+        self.y_history = np.array(self.y_history)
+        #velocities = [np.array(self.dx_history)[:-1], np.array(self.dy_history)[:-1]]
+        velocities = [np.array(self.dx_history), np.array(self.dy_history)]
+        self.path = np.concatenate((np.expand_dims(self.x_history, 1), np.expand_dims(self.y_history, 1)), axis=1).T
+        return velocities
+
     def train(self, max_iter):
         zList = np.zeros(max_iter+1)
         for step in range(max_iter):
@@ -215,28 +238,28 @@ class Optimiser():
 
             diff = np.abs(zList[step] - zList[step+1])
 
-            self.history_update(self.z, self.x, self.y)
-
+            
             self.grad = self.grads(self.vars)
+            self.history_update(self.z, self.x, self.y, self.dx, self.dy)
+
+            
             newVelo = self.update_weights(self.grad, currentVelocity)
 
             if (step+1) % 100 == 0:
                 try:
                     print("steps: {}  z: {:.6f}  x: {:.5f}  y: {:.5f}  dx: {:.5f}  dy: {:.5f}".format(step+1, float(self.func(self.vars)), self.x, self.y, self.dx, self.dy))
-                except decimal.InvalidOperation:
+                except Exception:
                     pass
             if np.abs(diff) < 1e-7 and step > 5:
                 print("Enough convergence")
                 print("steps: {}  z: {:.6f}  x: {:.5f}  y: {:.5f}".format(step+1, self.func(self.vars), self.x, self.y))
                 self.z = self.func(self.vars)
-                self.history_update(self.z, self.x, self.y)
+                self.history_update(self.z, self.x, self.y, self.dx, self.dy)
                 break
             self.saveVelocity(newVelo)
-
-        self.x_history = np.array(self.x_history)
-        self.y_history = np.array(self.y_history)
-        self.path = np.concatenate((np.expand_dims(self.x_history, 1), np.expand_dims(self.y_history, 1)), axis=1).T
-        return zList, step
+        
+        velocities = self.createPath()
+        return zList, step, velocities
 
     @property
     def x(self):
@@ -282,6 +305,19 @@ class OptimiserWithVaryingDelay(Optimiser):
     def saveVelocity(self, newVelocity):
         self.velocities.append(newVelocity)
         #np.append(self.velocities, newVelocity)
+
+    def update_weights(self, grads, velocity):
+
+        velocity = np.multiply(self.momentum, velocity) + np.multiply(self.lr, grads)
+        self.vars = np.subtract(self.vars, velocity)
+        return velocity
+
+    def createPath(self):
+        self.x_history = np.array(self.x_history)
+        self.y_history = np.array(self.y_history)
+        velocities = [np.array(self.dx_history)[:-1], np.array(self.dy_history)[:-1]]
+        self.path = np.concatenate((np.expand_dims(self.x_history, 1), np.expand_dims(self.y_history, 1)), axis=1).T
+        return velocities
     
 
 x = Symbol('x')
@@ -297,11 +333,11 @@ matyas = 0.26*(x**2+y**2)-0.48*x*y  #3, 3.5
 levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y))  #-3, 3
 himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2   #1, -3
 
-opt = OptimiserWithVaryingDelay(beale, -1, 1.4, momentum=0.8, meanDelay=5)
+opt = OptimiserWithVaryingDelay(beale, 1, 1.2, momentum=0.8, meanDelay=50)
 
-zList, convergeIter = opt.train(1000)
+zList, convergeIter, velocities = opt.train(1000)
 
 Plot3D = Plot3D(50, beale, margin=4.5)
 #Plot3D.plotMinima()
 #Plot3D.contourPlotWithPath(opt.path)
-Plot3D.plotContourWithMinima(opt.path, zList[:convergeIter+1], convergeIter)
+Plot3D.plotContourWithMinima(opt.path, zList[:convergeIter+1], convergeIter, velocities)
