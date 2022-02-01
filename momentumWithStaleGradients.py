@@ -144,9 +144,12 @@ class Plot3D():
 
         ax = fig.add_subplot(2,2,4)
 
-        
-        ax.plot(x, velocities[0], label="dx")
-        ax.plot(x, velocities[1], label="dy")
+        try:
+            ax.plot(x, velocities[0], label="dx")
+            ax.plot(x, velocities[1], label="dy")
+        except ValueError:
+            ax.plot(x[:-1], velocities[0], label="dx")
+            ax.plot(x[:-1], velocities[1], label="dy")
         ax.set_xlabel("Number of Iterations")
         ax.set_ylabel("Velocity in direction")
         plt.legend()
@@ -183,12 +186,18 @@ class Optimiser():
         self.y_history = []
         self.dx_history = []
         self.dy_history = []
+        self.oscillating = [False, False] #One for each axis [dx, dy]
 
     def gradient(self, function):
         gradx = Derivative(function, x).doit()
         grady = Derivative(function, y).doit()
         return [gradx, grady]
 
+    def secondDerivative(self, function):
+        gradxx = Derivative(Derivative(function, x), x).doit()
+        gradyy = Derivative(Derivative(function, y), y).doit()
+        return [gradxx, gradyy]
+        
     def update_weights(self, grads, velocity):
 
         velocity = np.multiply(self.momentum, velocity) + np.multiply(self.lr, grads)
@@ -229,7 +238,23 @@ class Optimiser():
         self.path = np.concatenate((np.expand_dims(self.x_history, 1), np.expand_dims(self.y_history, 1)), axis=1).T
         return velocities
 
+    def checkGradients(self, tol, step):
+
+        if self.oscillating[0] == False:
+            val = self.dx_history[-tol+1]
+            posDx = sum(self.dx_history[-tol:])
+            negDx = sum(self.dx_history[-(2*tol)+1:-tol+1])
+            print(posDx, negDx)
+            
+        if self.oscillating[1] == False:
+            val = self.dy_history[-tol+1]
+            posDy = sum(self.dy_history[-tol:])
+            negDy = sum(self.dy_history[-(2*tol)+1:-tol+1])
+            print(posDy, negDy)
+            
+
     def train(self, max_iter):
+        testingThreshold = 5
         zList = np.zeros(max_iter+1)
         for step in range(max_iter):
             currentVelocity = self.getCurrentVelocity()
@@ -241,7 +266,8 @@ class Optimiser():
             
             self.grad = self.grads(self.vars)
             self.history_update(self.z, self.x, self.y, self.dx, self.dy)
-
+            if len(self.dx_history) > 2*testingThreshold+1:
+                self.checkGradients(testingThreshold, step)
             
             newVelo = self.update_weights(self.grad, currentVelocity)
 
@@ -333,8 +359,7 @@ matyas = 0.26*(x**2+y**2)-0.48*x*y  #3, 3.5
 levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y))  #-3, 3
 himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2   #1, -3
 
-opt = OptimiserWithVaryingDelay(beale, 1, 1.2, momentum=0.8, meanDelay=50)
-
+opt = Optimiser(beale, 1, 1.2, momentum=0.8, delay=3)
 zList, convergeIter, velocities = opt.train(1000)
 
 Plot3D = Plot3D(50, beale, margin=4.5)
