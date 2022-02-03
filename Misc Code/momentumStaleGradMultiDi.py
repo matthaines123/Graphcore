@@ -3,16 +3,13 @@ from BaseOptimiser import Optimiser
 from VaryingDelay import OptimiserWithVaryingDelay
 from MomentumDecay import OptimiserWithMomentumDecay
 from LearningRateDecay import OptimiserWithLearningRateDecay
-from testClass import LearningRateAndMomentumDecay
+from LearningRateMomentumDecay import LearningRateAndMomentumDecay
 
 from sympy import Symbol, Derivative
 import numpy as np
 import time
 import os
 import math
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.colors import LogNorm
 
 from sympy import sin, cos, exp, sqrt
 from numpy import pi, e
