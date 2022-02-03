@@ -3,6 +3,7 @@ from BaseOptimiser import Optimiser
 from VaryingDelay import OptimiserWithVaryingDelay
 from MomentumDecay import OptimiserWithMomentumDecay
 from LearningRateDecay import OptimiserWithLearningRateDecay
+from testClass import LearningRateAndMomentumDecay
 
 from sympy import Symbol, Derivative
 import numpy as np
@@ -36,7 +37,7 @@ himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2 #1, -3
 """"""
 
 varInits = [1, 1.4]
-opt = OptimiserWithLearningRateDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.01, momentum_rate=0.8, learning_rate_scalar=0.95, delay=3)
+opt = LearningRateAndMomentumDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.01, momentum_rate=0.8, learning_rate_scalar=0.95, variable_momentum_scalar=0.95, delay=3,)
 zList, convergeIter, velocities, path = opt.train(1000)
 
 Plot3D = Plot3D(50, beale, margin=4.5)

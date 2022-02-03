@@ -11,7 +11,6 @@ class OptimiserWithVaryingDelay(Optimiser):
         self.velocities = []
         self.velocities.append(self.velocity)
         
-
     def getProbability(self, meanDelay):
         mu = meanDelay
         sigma = 1
@@ -31,7 +30,7 @@ class OptimiserWithVaryingDelay(Optimiser):
     def saveVelocity(self, newVelocity):
         self.velocities.append(newVelocity)
 
-    def update_weights(self, grads, velocity):
+    def updateWeights(self, grads, velocity):
         velocity = np.multiply(self.momentumVec, velocity) + np.multiply(self.lr, grads)
         self.varValues = np.subtract(self.varValues, velocity)
         return velocity

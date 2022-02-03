@@ -36,7 +36,7 @@ class Optimiser():
     def gradient(self, function):
         return [Derivative(function, symbol).doit() for symbol in self.varSymbols]
     
-    def update_weights(self, grads, velocity):
+    def updateWeights(self, grads, velocity):
         velocity = np.multiply(self.momentumVec, velocity) + np.multiply(self.lr, grads)        
         self.varValues = np.subtract(self.varValues, velocity)[0]
         return velocity
@@ -100,7 +100,7 @@ class Optimiser():
             
             self.grad = self.grads()
             self.historyUpdate(funcValue, self.varValues, self.grad)
-            newVelo = self.update_weights(self.grad, currentVelocity)
+            newVelo = self.updateWeights(self.grad, currentVelocity)
             
             if self.momentumDecay:
                 self.variableMomentum(step)
