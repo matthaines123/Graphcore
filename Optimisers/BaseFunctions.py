@@ -3,12 +3,12 @@ from sympy import Symbol
 class BaseFunctions():
     def __init__(self):
         self.x = Symbol('x')
-        self.y = Sumbol('y')
+        self.y = Symbol('y')
         
     def beale(self):
         x = self.x
         y = self.y
-        beale = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2
+        function = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2
         return function, [x, y]
 
     def goldsteinPrice(self):
