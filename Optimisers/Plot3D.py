@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from sympy import Symbol
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.colors import LogNorm
 
 class Plot3D():
     def __init__(self, noOfPoints, function, margin):
@@ -14,6 +17,9 @@ class Plot3D():
         self.z = self.getMeshSolution()
 
     def getMeshSolution(self):
+        
+        x = Symbol('x')
+        y = Symbol('y')
         count = 0
         funcValue = []
         for xi, yi in zip(self.x_mesh, self.y_mesh):
