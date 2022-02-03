@@ -109,6 +109,9 @@ class Plot3D():
         plt.show()
 
     def plotContourWithMinima(self, path, zList, maxIter, velocities):
+
+        
+
         fig = plt.figure(figsize=plt.figaspect(0.8))
         ax = fig.add_subplot(2,2,1,projection='3d')
 
@@ -239,18 +242,24 @@ class Optimiser():
         return velocities
 
     def checkGradients(self, tol, step):
-
+        pass
         if self.oscillating[0] == False:
             val = self.dx_history[-tol+1]
             posDx = sum(self.dx_history[-tol:])
             negDx = sum(self.dx_history[-(2*tol)+1:-tol+1])
-            print(posDx, negDx)
+            if (self.dx_history[-(tol+1)] * self.dx_history[-(tol+2)]) < 0:
+                self.oscillating[0] = True
+                print("dx",str(step))
+            
             
         if self.oscillating[1] == False:
             val = self.dy_history[-tol+1]
             posDy = sum(self.dy_history[-tol:])
             negDy = sum(self.dy_history[-(2*tol)+1:-tol+1])
-            print(posDy, negDy)
+            if (self.dy_history[-(tol+1)] * self.dy_history[-(tol+2)]) < 0:
+                self.oscillating[1] = True
+                print("dy",str(step))
+            
             
 
     def train(self, max_iter):
@@ -262,12 +271,10 @@ class Optimiser():
             zList[step+1] = self.z
 
             diff = np.abs(zList[step] - zList[step+1])
-
             
             self.grad = self.grads(self.vars)
             self.history_update(self.z, self.x, self.y, self.dx, self.dy)
-            if len(self.dx_history) > 2*testingThreshold+1:
-                self.checkGradients(testingThreshold, step)
+            
             
             newVelo = self.update_weights(self.grad, currentVelocity)
 
@@ -311,16 +318,22 @@ class OptimiserWithVaryingDelay(Optimiser):
         self.velocities = []
         self.velocities.append(self.velocity)
 
-    def getProbability(self, meanDelay):
+    def getProbability(self, meanDelay : int) -> int:
+        '''
+        Returns random delay based on poisson distribution with lambda = meanDelay
+        '''
         mu = meanDelay
         sigma = 1
-        dist = round(np.random.normal(mu, sigma))
+        dist = round(np.random.poisson(mu))
         if dist <= 1:
             return 1
         else:
             return dist
         
-    def getCurrentVelocity(self):
+    def getCurrentVelocity(self) -> float:
+        '''
+        Returns the velocity at a specified delay
+        '''
         delay = self.getProbability(self.meanDelay)
         if len(self.velocities) >= (delay + 1):
             
@@ -344,8 +357,61 @@ class OptimiserWithVaryingDelay(Optimiser):
         velocities = [np.array(self.dx_history)[:-1], np.array(self.dy_history)[:-1]]
         self.path = np.concatenate((np.expand_dims(self.x_history, 1), np.expand_dims(self.y_history, 1)), axis=1).T
         return velocities
-    
 
+
+class OptimiserLearningRateDecay(Optimiser):
+    def __init__(self, function, x_init=None, y_init=None, learning_rate=0.01, momentum=0.9, delay=1):
+        super().__init__(function, x_init, y_init, learning_rate, momentum, delay)
+        self.lr = [learning_rate, learning_rate]
+
+    def lr_decay(self , learning_rate : float) -> float:
+        lr = learning_rate*0.99
+        return lr
+
+    def alterLearningRate(self):
+        if self.oscillating[0]:
+            self.lr[0] = self.lr_decay(self.lr[0])
+        if self.oscillating[1]:
+            self.lr[1] = self.lr_decay(self.lr[1])
+
+    def train(self, max_iter, optimumZ):
+        testingThreshold = 1
+        zList = np.zeros(max_iter+1)
+        for step in range(max_iter):
+            currentVelocity = self.getCurrentVelocity()
+            self.z = self.func(self.vars)
+            zList[step+1] = self.z
+            diffFromMinima = np.abs(zList[step+1] - optimumZ)
+            diff = np.abs(zList[step] - zList[step+1])
+        
+            self.grad = self.grads(self.vars)
+            self.history_update(self.z, self.x, self.y, self.dx, self.dy)
+            if len(self.dx_history) > 2*testingThreshold+1:
+                self.checkGradients(testingThreshold, step)
+
+            self.alterLearningRate()
+            
+            newVelo = self.update_weights(self.grad, currentVelocity)
+
+            if (step+1) % 100 == 0:
+                try:
+                    print("steps: {}  z: {:.6f}  x: {:.5f}  y: {:.5f}  dx: {:.5f}  dy: {:.5f}".format(step+1, float(self.func(self.vars)), self.x, self.y, self.dx, self.dy))
+                except Exception:
+                    pass
+            if np.abs(diff) < 1e-7 and step > 5:
+                print("Enough convergence")
+                print("steps: {}  z: {:.6f}  x: {:.5f}  y: {:.5f}".format(step+1, self.func(self.vars), self.x, self.y))
+                self.z = self.func(self.vars)
+                self.history_update(self.z, self.x, self.y, self.dx, self.dy)
+                break
+            self.saveVelocity(newVelo)
+    
+        velocities = self.createPath()
+        return zList, step, velocities
+
+'''
+FUNCTIONS
+'''
 x = Symbol('x')
 y = Symbol('y')
 beale = (1.5 - x + x*y)**2 + (2.25 - x + x*y**2)**2 + (2.625 - x + x*y**3)**2   #1, 1.4
@@ -359,10 +425,14 @@ matyas = 0.26*(x**2+y**2)-0.48*x*y  #3, 3.5
 levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y))  #-3, 3
 himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2   #1, -3
 
-opt = Optimiser(beale, 1, 1.2, momentum=0.8, delay=3)
+opt = OptimiserWithVaryingDelay(beale, -3, 0, momentum=0.8, meanDelay=20)
+#opt = Optimiser(beale, 1, 1.2, momentum=0.8, delay=3)
+optimumZ = 0
 zList, convergeIter, velocities = opt.train(1000)
 
 Plot3D = Plot3D(50, beale, margin=4.5)
 #Plot3D.plotMinima()
 #Plot3D.contourPlotWithPath(opt.path)
+minima=[3,0.5]
+
 Plot3D.plotContourWithMinima(opt.path, zList[:convergeIter+1], convergeIter, velocities)
