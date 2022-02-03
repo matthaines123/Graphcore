@@ -2,6 +2,7 @@ from Plot3D import Plot3D
 from BaseOptimiser import Optimiser
 from VaryingDelay import OptimiserWithVaryingDelay
 from MomentumDecay import OptimiserWithMomentumDecay
+from LearningRateDecay import OptimiserWithLearningRateDecay
 
 from sympy import Symbol, Derivative
 import numpy as np
@@ -34,8 +35,8 @@ levi = sin(3*pi*x)**2 + ((x-1)**2)*(1+sin(3*pi*y)**2) + ((y-1)**2)*(1+sin(2*pi*y
 himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2 #1, -3
 """"""
 
-varInits = [1, 1.2]
-opt = OptimiserWithMomentumDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum=0.8, variableMomentumScalar=0.95, delay=30)
+varInits = [1, 1.4]
+opt = OptimiserWithLearningRateDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.01, momentum_rate=0.8, learning_rate_scalar=0.95, delay=3)
 zList, convergeIter, velocities, path = opt.train(1000)
 
 Plot3D = Plot3D(50, beale, margin=4.5)

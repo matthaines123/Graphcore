@@ -4,7 +4,7 @@ from collections import deque
 
 
 class Optimiser():
-    def __init__(self, function, varSymbols, varInits=None, tol=1e-7, learning_rate=0.01, momentum=0.9, variableMomentumScalar=None, delay=1):
+    def __init__(self, function, varSymbols, varInits, **kwargs):
         self.function = function
         self.varSymbols = varSymbols
         self.gradients = self.gradient(self.function)
@@ -15,19 +15,18 @@ class Optimiser():
 
         scale = 3.0
         for varIndex in range(len(varSymbols)):
-            if varInits is not None:
-                self.varValues[varIndex] = varInits[varIndex]
-            else:
-                self.varValues[varIndex] = np.random.uniform(low=-scale, high=scale)
+            self.varValues[varIndex] = varInits[varIndex]
+        
+        self.momentumDecay = False
+        self.learningRateDecay = False
 
-        self.tol = tol
-        self.lr = learning_rate
-        self.momentumVec = np.array([momentum] * len(self.varSymbols))
+        self.tol = kwargs['tol']
+        self.lr = np.array([kwargs["learning_rate"]] * len(self.varSymbols))
+        self.momentumVec = np.array([kwargs["momentum_rate"]] * len(self.varSymbols))
         self.velocity = np.zeros([len(varSymbols)])
-
-        if delay != None:
+        if kwargs['delay'] != None:
             self.q = deque()
-            for _ in range(delay):
+            for _ in range(kwargs['delay']):
                 self.q.append([self.velocity])
 
         self.varValuesHistory = [[] for var in range(len(varSymbols))]
@@ -103,6 +102,11 @@ class Optimiser():
             self.historyUpdate(funcValue, self.varValues, self.grad)
             newVelo = self.update_weights(self.grad, currentVelocity)
             
+            if self.momentumDecay:
+                self.variableMomentum(step)
+            if self.learningRateDecay:
+                self.variableLR(step)
+
             self.saveVelocity(newVelo)
 
             if np.abs(diff) < self.tol and step > 5:

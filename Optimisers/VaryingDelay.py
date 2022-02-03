@@ -2,11 +2,15 @@ from BaseOptimiser import Optimiser
 import numpy as np
 
 class OptimiserWithVaryingDelay(Optimiser):
-    def __init__(self, function, varSymbols, varInits=None, tol=1e-7, learning_rate=0.01, momentum=0.9, variableMomentumScalar=None, meanDelay=1):
-        super().__init__(function, varSymbols, varInits, tol, learning_rate, momentum, variableMomentumScalar, delay=None)
-        self.meanDelay = meanDelay
+    def __init__(self, function, varSymbols, varInits=None, **kwargs):
+        self.meanDelay = kwargs['delay']
+        kwargs['delay']=None
+        
+        super().__init__(function, varSymbols, varInits, **kwargs)
+        
         self.velocities = []
         self.velocities.append(self.velocity)
+        
 
     def getProbability(self, meanDelay):
         mu = meanDelay
