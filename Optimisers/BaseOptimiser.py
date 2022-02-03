@@ -1,5 +1,7 @@
 from sympy import Derivative
 import numpy as np
+from collections import deque
+
 
 class Optimiser():
     def __init__(self, function, varSymbols, varInits=None, tol=1e-7, learning_rate=0.01, momentum=0.9, variableMomentumScalar=None, delay=1):
@@ -21,10 +23,6 @@ class Optimiser():
         self.tol = tol
         self.lr = learning_rate
         self.momentumVec = np.array([momentum] * len(self.varSymbols))
-        if variableMomentumScalar != None:
-            self.variableMomentumScalar = variableMomentumScalar
-        else:
-            self.variableMomentumScalar = None
         self.velocity = np.zeros([len(varSymbols)])
 
         if delay != None:
@@ -104,9 +102,6 @@ class Optimiser():
             self.grad = self.grads()
             self.historyUpdate(funcValue, self.varValues, self.grad)
             newVelo = self.update_weights(self.grad, currentVelocity)
-
-            if self.variableMomentumScalar is not None:
-                self.variableMomentum(step)
             
             self.saveVelocity(newVelo)
 

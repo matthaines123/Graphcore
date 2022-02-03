@@ -1,6 +1,7 @@
 from Plot3D import Plot3D
 from BaseOptimiser import Optimiser
 from VaryingDelay import OptimiserWithVaryingDelay
+from MomentumDecay import OptimiserWithMomentumDecay
 
 from sympy import Symbol, Derivative
 import numpy as np
@@ -10,7 +11,7 @@ import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LogNorm
-from collections import deque
+
 from sympy import sin, cos, exp, sqrt
 from numpy import pi, e
 from decimal import Decimal, DecimalException
@@ -34,7 +35,7 @@ himmelblau = (x**2 + y - 11)**2 + (x+y**2-7)**2 #1, -3
 """"""
 
 varInits = [1, 1.2]
-opt = OptimiserWithVaryingDelay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum=0.8, variableMomentumScalar=0.95, meanDelay=30)
+opt = OptimiserWithMomentumDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum=0.8, variableMomentumScalar=0.95, delay=30)
 zList, convergeIter, velocities, path = opt.train(1000)
 
 Plot3D = Plot3D(50, beale, margin=4.5)
