@@ -9,10 +9,10 @@ def main():
     function, varSymbols = BaseFunctions().beale()
 
     # Initial values
-    varInits = [1, 1.4]
+    varInits = [1, 1.2]
 
     # Adding function & initial conditions to optimiser
-    opt = OptimiserWithMomentumDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum_rate=0.8, variable_momentum_scalar=0.95, delay=1)
+    opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum_rate=0.8, variable_momentum_scalar=0.95, delay=1)
     funcValues, convergeIter, velocities, path = opt.train(1000)
 
     # Plotting results only if the function is in 3-Dimensions

@@ -1,4 +1,7 @@
 from sympy import Symbol
+from sympy import sin, cos, exp, sqrt
+from numpy import pi, e
+
 
 class BaseFunctions():
     def __init__(self):

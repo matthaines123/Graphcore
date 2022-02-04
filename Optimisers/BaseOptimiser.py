@@ -86,7 +86,6 @@ class Optimiser():
             funcValueList[step+1] = funcValue
 
             diff = np.abs(funcValueList[step] - funcValueList[step+1])
-            
             self.grad = self.grads()
             self.historyUpdate(funcValue, self.varValues, self.grad)
             newVelo = self.updateWeights(self.grad, currentVelocity)
