@@ -78,17 +78,6 @@ class Optimiser():
         path = np.concatenate((np.expand_dims(x_history, 1), np.expand_dims(y_history, 1)), axis=1).T
         return velocities, path
 
-    def variableMomentum(self, step):
-        for index, dnHistory in enumerate(self.diffValuesHistory):
-            dn1 = self.diffValuesHistory[index][step]
-            dn2 = self.diffValuesHistory[index][step - 1]
-            if dn1 > 0 and dn2 < 0:
-                self.momentumVec *= self.variableMomentumScalar
-                return
-            elif dn1 < 0 and dn2 > 0:
-                self.momentumVec *= self.variableMomentumScalar
-                return
-
     def train(self, maxIter):
         funcValueList = np.zeros(maxIter + 1)
         for step in range(maxIter):

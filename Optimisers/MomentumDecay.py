@@ -6,6 +6,7 @@ class OptimiserWithMomentumDecay(Optimiser):
         super().__init__(function, varSymbols, varInits, **kwargs)
         self.variableMomentumScalar = kwargs['variable_momentum_scalar']
         self.momentumDecay = True
+        self.oscillationFrequency = 0
 
     def variableMomentum(self, step):
         for index, dnHistory in enumerate(self.diffValuesHistory):
@@ -17,3 +18,5 @@ class OptimiserWithMomentumDecay(Optimiser):
             elif dn1 < 0 and dn2 > 0:
                 self.momentumVec *= self.variableMomentumScalar
                 return
+
+   

@@ -11,7 +11,6 @@ from tqdm import tqdm
  
 def testDelays(function, maxDelay=5, learningRateInterval=10, maxIter=500):
     iterList = []
-    
 
     y = np.arange(1, maxDelay)
     x = np.linspace(0.001, 0.5, num=learningRateInterval)
