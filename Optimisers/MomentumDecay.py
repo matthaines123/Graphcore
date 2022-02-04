@@ -16,12 +16,15 @@ class OptimiserWithMomentumDecay(Optimiser):
             self.oscillations[index].append(isOscillating)
             if isOscillating:
                 oscillationFreq = self.getOscillatingFrequency(index)
+                #Only change the momentum if the oscillation frequency is over a threshold
                 if oscillationFreq > 8:
+                    #Updating the momentum
                     self.momentumVec[index] *= self.variableMomentumScalar
 
     def checkOscillating(self, step, dnHistory):
         dn1 = dnHistory[step]
         dn2 = dnHistory[step - 1]
+        #Checking if the gradient has changed direction
         if dn1 * dn2 < 0:
             return True
         else:
@@ -29,6 +32,7 @@ class OptimiserWithMomentumDecay(Optimiser):
 
     def getOscillatingFrequency(self, dim):
         iterateRange = 10
+        #Returns the number of oscillations in the last ten iterates
         return sum(self.oscillations[dim][-iterateRange:])
     
 
