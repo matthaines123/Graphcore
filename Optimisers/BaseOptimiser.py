@@ -48,10 +48,13 @@ class Optimiser():
         for varIndex, value in enumerate(diffValues):
             self.diffValuesHistory[varIndex].append(value)
 
-    def func(self):
+    def func(self, values=None):
         varValuePairs = []
-        for symbol, varValue in zip(self.varSymbols, self.varValues):
-            varValuePairs.append((symbol, varValue))
+        for index, symbol, varValue in zip(range(len(self.varSymbols)), self.varSymbols, self.varValues):
+            if values is not None:
+                varValuePairs.append((symbol, values[index]))
+            else:
+                varValuePairs.append((symbol, varValue))
         result = self.function.subs(varValuePairs)
         return result
 
@@ -86,6 +89,7 @@ class Optimiser():
             funcValueList[step+1] = funcValue
 
             diff = np.abs(funcValueList[step] - funcValueList[step+1])
+            
             self.grad = self.grads()
             self.historyUpdate(funcValue, self.varValues, self.grad)
             newVelo = self.updateWeights(self.grad, currentVelocity)
@@ -110,4 +114,8 @@ class Optimiser():
                     pass
 
         velocities, path = self.createPath()
+
+        if step+1 == maxIter:
+            velocities = [np.insert(velocity, 0, 0, axis=0) for velocity in velocities]
+        
         return funcValueList, step, velocities, path
