@@ -1,5 +1,6 @@
 from BaseOptimiser import Optimiser
 import numpy as np
+from sympy import exp
 
 class OptimiserWithMomentumDecay(Optimiser):
     def __init__(self, function, varSymbols, varInits=None, **kwargs):
@@ -7,6 +8,8 @@ class OptimiserWithMomentumDecay(Optimiser):
         self.variableMomentumScalar = kwargs['variable_momentum_scalar']
         self.momentumDecay = True
         self.oscillations = []
+        self.iterateRange = 10
+        self.momentumPoint = 0.75
         for dim in range(len(varSymbols)):
             self.oscillations.append([])
 
@@ -17,9 +20,13 @@ class OptimiserWithMomentumDecay(Optimiser):
             if isOscillating:
                 oscillationFreq = self.getOscillatingFrequency(index)
                 #Only change the momentum if the oscillation frequency is over a threshold
-                if oscillationFreq > 8:
                     #Updating the momentum
-                    self.momentumVec[index] *= self.variableMomentumScalar
+                self.momentumVec[index] = self.updateMomentum(self.momentumVec[index], oscillationFreq)
+
+    def updateMomentum(self, currentMomentum, oscillationFreq):
+        pointOfInflection = self.iterateRange*self.momentumPoint
+        sigmoidFactor = (1-self.variableMomentumScalar/(1+exp(-(oscillationFreq-pointOfInflection))))
+        return sigmoidFactor*currentMomentum
 
     def checkOscillating(self, step, dnHistory):
         dn1 = dnHistory[step]
@@ -31,9 +38,9 @@ class OptimiserWithMomentumDecay(Optimiser):
             return False
 
     def getOscillatingFrequency(self, dim):
-        iterateRange = 10
+        
         #Returns the number of oscillations in the last ten iterates
-        return sum(self.oscillations[dim][-iterateRange:])
+        return sum(self.oscillations[dim][-self.iterateRange:])
     
 
             
