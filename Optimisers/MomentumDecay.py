@@ -10,13 +10,12 @@ class OptimiserWithMomentumDecay(Optimiser):
 
     def variableMomentum(self, step):
         for index, dnHistory in enumerate(self.diffValuesHistory):
-            dn1 = self.diffValuesHistory[index][step]
-            dn2 = self.diffValuesHistory[index][step - 1]
+            dn1 = dnHistory[step]
+            dn2 = dnHistory[step - 1]
             if dn1 > 0 and dn2 < 0:
-                self.momentumVec *= self.variableMomentumScalar
-                return
+                self.momentumVec[index] *= self.variableMomentumScalar
             elif dn1 < 0 and dn2 > 0:
-                self.momentumVec *= self.variableMomentumScalar
-                return
+                self.momentumVec[index] *= self.variableMomentumScalar
+
 
    
