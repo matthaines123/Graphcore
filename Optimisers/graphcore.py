@@ -11,7 +11,7 @@ def main():
     varInits = [1, 1.2]
 
     # Adding function & initial conditions to optimiser
-    opt = OptimiserWithMomentumDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum=0.8, variableMomentumScalar=0.95, delay=30)
+    opt = OptimiserWithMomentumDecay(beale, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum_rate=0.8, variable_momentum_scalar=0.95, delay=1)
     funcValues, convergeIter, velocities, path = opt.train(1000)
 
     # Plotting results only if the function is in 3-Dimensions
@@ -20,8 +20,11 @@ def main():
         plot3D.plotContourWithMinima(path, funcValues[:convergeIter+1], convergeIter, velocities)
 
         # Other types of plots
-        """Plot3D.plotMinima()
-        #Plot3D.contourPlotWithPath(path)"""
+        
+        #plot3D.plotMinima()
+        #plot3D.contourPlotWithPath(path)
     
 if __name__ =="__main__":
     main()
+
+#.yaml config
