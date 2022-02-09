@@ -39,7 +39,7 @@ class OptimiserWithMomentumDecay(Optimiser):
         return currentMomentum
 
 
-    #instead of decrease the momentum increase momentum in ratio that increase ratio decay over time if dont oscillation
+    #instead of decrease the momentum increase momentum in ratio that ratio icrease over time if dont oscillation
     #prevent that momentum is small from the start
     def updateMomentum_method2(self, currentMomentum, step, delay ):
         currentMomentum = currentMomentum * (1+exp(-self.maxIter*1.2/(step+1)))
