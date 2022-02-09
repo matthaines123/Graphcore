@@ -6,6 +6,7 @@ class OptimiserWithMomentumDecay(Optimiser):
     def __init__(self, function, varSymbols, varInits=None, **kwargs):
         super().__init__(function, varSymbols, varInits, **kwargs)
         self.variableMomentumScalar = kwargs['variable_momentum_scalar']
+        self.delay = kwargs['delay']
         self.momentumDecay = True
         self.oscillations = []
         self.iterateRange = 10
@@ -22,11 +23,26 @@ class OptimiserWithMomentumDecay(Optimiser):
                 #Only change the momentum if the oscillation frequency is over a threshold
                     #Updating the momentum
                 self.momentumVec[index] = self.updateMomentum(self.momentumVec[index], oscillationFreq)
+            else:   # different decay method when not oscillation
+                
+                #self.momentumVec[index] = self.updateMomentum_method1(self.momentumVec[index] , self.delay)
+                self.momentumVec[index] = self.updateMomentum_method2(self.momentumVec[index] , step , self.delay )
 
     def updateMomentum(self, currentMomentum, oscillationFreq):
         pointOfInflection = self.iterateRange*self.momentumPoint
         sigmoidFactor = (1-self.variableMomentumScalar/(1+exp(-(oscillationFreq-pointOfInflection))))
         return sigmoidFactor*currentMomentum
+    
+    #constant small ratio of deacy
+    def updateMomentum_method1(self, currentMomentum, decay):
+        currentMomentum = (1-self.delay*0.003)*currentMomentum
+        return currentMomentum
+
+    # decay get smaller overtime ( this perform better than method 1)
+    def updateMomentum_method2(self, currentMomentum, step, delay ):
+        
+        currentMomentum = currentMomentum * self.variableMomentumScalar *(1 - exp(-step/(100 * delay))) + (1 - currentMomentum * (1- self.variableMomentumScalar))
+        return currentMomentum
 
     def checkOscillating(self, step, dnHistory):
         dn1 = dnHistory[step]
