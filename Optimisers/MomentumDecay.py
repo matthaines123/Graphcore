@@ -23,17 +23,17 @@ class OptimiserWithMomentumDecay(Optimiser):
                 #Only change the momentum if the oscillation frequency is over a threshold
                     #Updating the momentum
                 self.momentumVec[index] = self.updateMomentum(self.momentumVec[index], oscillationFreq)
-            else:   # different decay method when not oscillation
+            elif ( self.init_moment  > self.momentumVec[index] ) & (isOscillating == False ) :
                 
                 #self.momentumVec[index] = self.updateMomentum_method1(self.momentumVec[index] , self.delay)
                 self.momentumVec[index] = self.updateMomentum_method2(self.momentumVec[index] , step , self.delay )
 
-    def updateMomentum(self, currentMomentum, oscillationFreq):
+    def updateMomentum(self, currentMomentum, oscillationFreq): 
         pointOfInflection = self.iterateRange*self.momentumPoint
         sigmoidFactor = (1-self.variableMomentumScalar/(1+exp(-(oscillationFreq-pointOfInflection))))
         return sigmoidFactor*currentMomentum
     
-    #constant small ratio of deacy
+    #constant small ratio of deacy. can be ignore
     def updateMomentum_method1(self, currentMomentum, decay):
         currentMomentum = (1-self.delay*0.003)*currentMomentum
         return currentMomentum
