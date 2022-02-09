@@ -16,7 +16,7 @@ def main():
     funcValues, convergeIter, velocities, path = opt.train(1000)
 
     # Plotting results only if the function is in 3-Dimensions
-    if len(varSymbols):
+    if len(varSymbols) == 2:
         plot3D = Plot3D(50, function, margin=4.5)
         plot3D.plotContourWithMinima(path, funcValues[:convergeIter+1], convergeIter, velocities)
 
