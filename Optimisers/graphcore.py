@@ -12,7 +12,7 @@ def main():
     varInits = [1, 1.2]
 
     # Adding function & initial conditions to optimiser
-    opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum_rate=0.8, variable_momentum_scalar=0.1, delay=2)
+    opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-7, learning_rate=0.02, momentum_rate=0.8, variable_momentum_scalar=0.1, delay=5)
     funcValues, convergeIter, velocities, path = opt.train(1000)
 
     # Plotting results only if the function is in 3-Dimensions
