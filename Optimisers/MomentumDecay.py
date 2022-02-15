@@ -40,7 +40,7 @@ class OptimiserWithMomentumDecay(Optimiser):
 
 
     #instead of decrease the momentum increase momentum in ratio that ratio icrease over time if dont oscillation
-    #prevent that momentum is small from the start
+    #If it dont oscillate, it's likly that it has been denoise , so we can increase the momentum in order to reduce the iteration
     def updateMomentum_method2(self, currentMomentum, step, delay ):
         currentMomentum = currentMomentum * (1+exp(-self.maxIter*1.2/(step+1)))
         return currentMomentum
