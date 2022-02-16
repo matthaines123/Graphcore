@@ -94,12 +94,16 @@ class Optimiser():
             self.historyUpdate(funcValue, self.varValues, self.grad)
             newVelo = self.updateWeights(self.grad, currentVelocity)
             
+
             if self.momentumDecay:
-                self.variableMomentum(step)
+                self.variableMomentum(step, maxIter)
+
             if self.learningRateDecay:
                 self.variableLR(step)
 
             self.saveVelocity(newVelo)
+
+            
 
             if np.abs(diff) < self.tol and step > 5:
                 print("Enough convergence!")
