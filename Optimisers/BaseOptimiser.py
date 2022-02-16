@@ -37,8 +37,9 @@ class Optimiser():
         return [Derivative(function, symbol).doit() for symbol in self.varSymbols]
     
     def updateWeights(self, grads, velocity):
-        velocity = np.multiply(self.momentumVec, velocity) + np.multiply(self.lr, grads)        
-        self.varValues = np.subtract(self.varValues, velocity)[0]
+        velocity = np.multiply(self.momentumVec, velocity) + grads
+        scaled_velocity = np.multiply(self.lr, velocity)
+        self.varValues = np.subtract(self.varValues, scaled_velocity)[0]
         return velocity
 
     def historyUpdate(self, funcValue, varValues, diffValues):
