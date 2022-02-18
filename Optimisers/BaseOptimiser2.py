@@ -24,11 +24,11 @@ class Optimiser():
         self.lr = np.array([kwargs["learning_rate"]] * len(self.varSymbols))
         self.momentumVec = np.array([kwargs["momentum_rate"]] * len(self.varSymbols))
         self.velocity = np.zeros([len(varSymbols)])
+
         if kwargs['delay'] != None:
             self.q = deque()
             for _ in range(kwargs['delay']):
                 self.q.append([self.velocity])
-
         self.delay = kwargs['delay']
 
         self.varValuesHistory = [[] for var in range(len(varSymbols))]
@@ -87,16 +87,15 @@ class Optimiser():
     def train(self, maxIter):
         funcValueList = np.zeros(maxIter + 1)
         gradlist = np.zeros([maxIter + 1, 2])
-        finalZ = 0
+
         for step in range(maxIter):
             currentVelocity = self.getCurrentVelocity()
             funcValue = self.func()
             funcValueList[step+1] = funcValue
 
-            diff = np.abs(funcValueList[step] - funcValueList[step+1])
-            
-            self.grad = self.grads()
 
+            diff = np.abs(funcValueList[step] - funcValueList[step+1])
+            self.grad = self.grads()
             gradlist[step] = self.grad
 
             if step >= self.delay:
@@ -104,13 +103,9 @@ class Optimiser():
             else:
                 gradvar = gradlist[0]
 
-
             self.historyUpdate(funcValue, self.varValues, gradvar)
             newVelo = self.updateWeights(gradvar, currentVelocity)
             
-
-
-
 
             if self.momentumDecay:
                 self.variableMomentum(step, maxIter)
@@ -126,12 +121,13 @@ class Optimiser():
                 print("Enough convergence!")
                 print("Steps: {} Function Value: {}, Diff:{}".format(step+1, self.func(), diff))
                 self.historyUpdate(funcValue, self.varValues, self.grad)
-                finalZ = self.func()
                 break
 
             if (step+1) % 100 == 0:
                 try:
                     print("Steps: {} Function Value: {}, Diff:{}".format(step+1, self.func(), diff))
+
+
                 except Exception:
                     pass
 
