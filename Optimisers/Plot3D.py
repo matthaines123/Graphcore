@@ -89,10 +89,12 @@ class Plot3D():
 
         plt.show()
 
-    def contourPlot(self):
+    def contourPlot(self, path, zList, maxIter, velocities):
         fig, ax = plt.subplots(figsize=(20, 16))
 
-        ax.contour(self.x_mesh.astype(float), self.y_mesh.astype(float), self.z.astype(float), levels=np.logspace(-.5, 5, 35), norm=LogNorm(), cmap=plt.cm.jet)
+        ax.contour(self.x_mesh, self.y_mesh, self.z, levels=np.logspace(-.5, 5, 35), alpha = 0.5, norm=LogNorm(), cmap=plt.cm.jet)
+    
+        ax.quiver(path[0,:-1].astype(float), path[1,:-1].astype(float), path[0,1:].astype(float)-path[0,:-1].astype(float), path[1,1:].astype(float)-path[1,:-1].astype(float), scale_units='xy', angles='xy', scale=1, color='k')
 
         ax.set_xlabel('x')
         ax.set_ylabel('y')

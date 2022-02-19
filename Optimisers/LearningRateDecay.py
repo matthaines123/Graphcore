@@ -11,22 +11,12 @@ class OptimiserWithLearningRateDecay(Optimiser):
         self.learningRateDecay = True
         self.oscillations = []
         self.iterateRange = 10
-        self.lrPoint = 0.75
+        self.oscillationFreq = [[],[]]
+        self.lrPoint = 0.2
 
         #self.init_lr = np.zeros([len(varSymbols)])
         for dim in range(len(varSymbols)):
             self.oscillations.append([])
-
-    def variableLR(self, step):
-        for index, dnHistory in enumerate(self.diffValuesHistory):
-            dn1 = self.diffValuesHistory[index][step]
-            dn2 = self.diffValuesHistory[index][step - 1]
-            if dn1 > 0 and dn2 < 0:
-                self.lr *= self.learningRateScalar
-                return
-            elif dn1 < 0 and dn2 > 0:
-                self.lr *= self.learningRateScalar
-                return
 
 
     def variableLR(self, step):
@@ -40,6 +30,9 @@ class OptimiserWithLearningRateDecay(Optimiser):
                 #Only change the momentum if the oscillation frequency is over a threshold
                     #Updating the momentum
                 self.lr[index] = self.updateLR(self.lr[index], oscillationFreq)
+            else:
+                oscillationFreq = 0
+            self.oscillationFreq[index].append(oscillationFreq)
             
 
             '''elif (self.init_moment[index]  > self.momentumVec[index] ) & (isOscillating == False ) :

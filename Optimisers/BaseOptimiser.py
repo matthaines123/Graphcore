@@ -22,7 +22,9 @@ class Optimiser():
 
         self.tol = kwargs['tol']
         self.lr = np.array([kwargs["learning_rate"]] * len(self.varSymbols))
+
         self.momentumVec = np.array([kwargs["momentum_rate"]] * len(self.varSymbols))
+
         self.velocity = np.zeros([len(varSymbols)])
         if kwargs['delay'] != None:
             self.q = deque()
@@ -109,9 +111,6 @@ class Optimiser():
             newVelo = self.updateWeights(gradvar, currentVelocity)
             
 
-
-
-
             if self.momentumDecay:
                 self.variableMomentum(step, maxIter)
 
@@ -122,7 +121,7 @@ class Optimiser():
 
             
 
-            if np.abs(diff) < self.tol and step > 5:
+            if self.func() < self.tol and step > 5:
                 print("Enough convergence!")
                 print("Steps: {} Function Value: {}, Diff:{}".format(step+1, self.func(), diff))
                 self.historyUpdate(funcValue, self.varValues, self.grad)

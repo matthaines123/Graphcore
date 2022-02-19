@@ -8,37 +8,37 @@ warnings.filterwarnings('ignore')
  
  
 def main():
-    learningRateScalars = np.linspace(0.4, 0.90, num=20)
-    momentumRateScalars = np.linspace(0.1, 0.90, num=20)
+    learningRateScalars = np.geomspace(0.1,100, num=100)
+    #learningRateScalars[:] = [1-lr for lr in learningRateScalars]
+    print(learningRateScalars)
     converges = []
     minimum = 0
     errors = []
-    for lrscalar in learningRateScalars:
-        for momentumRate in momentumRateScalars:
-            print(lrscalar, momentumRate)
-        # Selecting the function
-            function, varSymbols = BaseFunctions().beale()
- 
-            # Initial values
-            varInits = [1, 1.2]
- 
-            # Adding function & initial conditions to optimiser
-            opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-5, learning_rate=0.02, learning_rate_scalar=0.9, momentum_rate=momentumRate, variable_momentum_scalar=lrscalar, delay=2)
-            try:
-                funcValues, convergeIter, velocities, path = opt.train(10000)
-                error = abs(funcValues - minimum)
-                converges.append(convergeIter)
-                errors.append(error)
-            except RuntimeWarning:
-                converges.append(10000)
-                errors.append(1)
+    for lr in learningRateScalars:
+        
+    # Selecting the function
+        function, varSymbols = BaseFunctions().beale()
+
+        # Initial values
+        varInits = [1, 1]
+
+        # Adding function & initial conditions to optimiser
+        opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-5, learning_rate=0.02, learning_rate_scalar=0.05, momentum_rate=0.45, variable_momentum_scalar=lr, delay=2)
+        try:
+            funcValues, convergeIter, velocities, path = opt.train(1000)
+            error = abs(funcValues - minimum)
+            converges.append(convergeIter)
+            errors.append(error)
+        except RuntimeWarning:
+            converges.append(10000)
+            errors.append(1)
                
  
         # Plotting results only if the function is in 3-Dimensions
        
  
-    fig = plt.figure()
-    X, Y = np.meshgrid(learningRateScalars, momentumRateScalars)
+    
+    '''X, Y = np.meshgrid(learningRateScalars, momentumRateScalars)
     convergesMatrix = np.reshape(converges, (-1,len(learningRateScalars)))
     
     errorsMatrix = np.reshape(errors, (-1, len(learningRateScalars)))
@@ -61,6 +61,14 @@ def main():
     ax.set_zlabel('Iterations to Convergence')
  
  
+    plt.show()'''
+
+    
+    plt.plot(learningRateScalars, converges)
+    plt.rcParams['text.usetex'] = True
+    plt.xlabel('$\delta\\beta_{k\_min}$')
+    plt.xscale('log')
+    plt.ylabel('Iterations to converge')
     plt.show()
        
 if __name__ =="__main__":
