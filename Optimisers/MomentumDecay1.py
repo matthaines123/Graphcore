@@ -32,7 +32,7 @@ class OptimiserWithMomentumDecay1(Optimiser):
                 # Updating the momentum
 
                 self.oscillationNum += 1
-                print('oscillation')
+                #print('oscillation')
                 self.momentumVec[index] = self.updateMomentum(self.momentumVec[index], oscillationFreq, self.delay , self.oscillationNum)
                 #self.momentumVec[index] = self.updateMomentum(self.momentumVec[index], oscillationFreq, self.delay)
                 #print(self.momentumVec[index])
@@ -42,7 +42,7 @@ class OptimiserWithMomentumDecay1(Optimiser):
 
                 #self.momentumVec[index] = self.updateMomentum_method1(self.momentumVec[index] , self.delay)
                 self.momentumVec[index] = self.updateMomentum_method2(self.momentumVec[index], step, self.delay,maxIter)
-                print(self.momentumVec[index])
+                #print(self.momentumVec[index])
             #else:
                 #self.momentumVec[index] = self.updateMomentum_method1(self.momentumVec[index] , self.delay)
 
