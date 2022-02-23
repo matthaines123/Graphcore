@@ -11,12 +11,12 @@ def main():
     function, varSymbols = BaseFunctions().beale()
 
     # Initial values
-    varInits = [1, 1]
+    varInits = [0.5,0.5]
 
     # Adding function & initial conditions to optimiser
     
-    opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-5, learning_rate=0.02, learning_rate_scalar=0.05, momentum_rate=0.45, variable_momentum_scalar=0.99, delay=2)
-    funcValues, convergeIter, velocities, path = opt.train(1000)
+    opt = LearningRateAndMomentumDecay(function, varSymbols, varInits, tol=1e-5, learning_rate=0.02, learning_rate_scalar=0.05, momentum_rate=0.45, variable_momentum_scalar=2, delay=3)
+    funcValues, convergeIter, velocities, path = opt.train(10000)
     
     '''newOscillations = [[],[]]
     current = 0
@@ -45,9 +45,9 @@ def main():
     plt.show()'''
 
     # Plotting results only if the function is in 3-Dimensions
-    if len(varSymbols) == 2:
-        plot3D = Plot3D(50, function, margin=4.5)
-        plot3D.contourPlot(path, funcValues[:convergeIter+1], convergeIter, velocities)
+    #if len(varSymbols) == 2:
+     #   plot3D = Plot3D(50, function, margin=4.5)
+        #plot3D.plotContourWithMinima(path, funcValues[:convergeIter+1], convergeIter, velocities)
 
         # Other types of plots
         

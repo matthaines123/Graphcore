@@ -61,3 +61,8 @@ class BaseFunctions():
                     (x+y**2-7)**2)
         return function, [x, y]
     
+    def threecamel(self):
+        x = self.x
+        y = self.y
+        function = 2*x**2 - 1.05*x**4+(1/6)*x**6+x*y+y**2
+        return function, [x,y]

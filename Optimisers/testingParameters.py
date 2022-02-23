@@ -23,7 +23,7 @@ def main():
         varInits = [1, 1]
 
         # Adding function & initial conditions to optimiser
-        opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-5, learning_rate=0.02, learning_rate_scalar=0.05, momentum_rate=0.45, variable_momentum_scalar=lr, delay=2)
+        opt = OptimiserWithMomentumDecay(function, varSymbols, varInits, tol=1e-5, learning_rate=0.02, learning_rate_scalar=0.05, momentum_rate=0.45, variable_momentum_scalar=lr, delay=5)
         try:
             funcValues, convergeIter, velocities, path = opt.train(1000)
             error = abs(funcValues - minimum)
